@@ -1,0 +1,83 @@
+import openpyxl
+
+location = "C:\\Users\\rnarn\\Desktop\\input.xlsx"
+ip = openpyxl.load_workbook(location)
+
+location = "C:\\Users\\rnarn\\Desktop\\list.xlsx"
+lst = openpyxl.load_workbook(location).active
+
+op = openpyxl.Workbook()
+current_sheet = op.active
+op.remove(current_sheet)
+
+student_list = ["\0"] * 40
+i = 0
+while i < 40:
+    student_list[i] = lst.cell(row=i+2, column=1).value
+    i += 1
+student_list.sort()
+
+i = 0
+while i < 40:
+    op.create_sheet(title=student_list[i], index=i)
+    sheet = op[student_list[i]]
+    sheet.cell(row=1, column=1).value = "Subject"
+    sheet.cell(row=1, column=2).value = "Mid Sem"
+    sheet.cell(row=1, column=3).value = "End Sem"
+    sheet.cell(row=1, column=4).value = "Total"
+    sheet.cell(row=1, column=5).value = "Total Marks"
+    sheet.cell(row=2, column=5).value = 0
+    i += 1
+
+i = 1
+while i <= 18:
+    i += 1
+    sheet = ip[lst.cell(row=i, column=2).value]
+    sub = sheet.title
+    j = 2
+    while j <= sheet.max_row:
+        student_name = sheet.cell(row=j, column=1).value
+        student_sheet = op[student_name]
+        r = student_sheet.max_row + 1
+        student_sheet.cell(row=r, column=1).value = sub
+        student_sheet.cell(row=r, column=2).value = sheet.cell(row=j, column=2).value
+        student_sheet.cell(row=r, column=3).value = sheet.cell(row=j, column=3).value
+        student_sheet.cell(row=r, column=4).value = sheet.cell(row=j, column=2).value + sheet.cell(row=j,
+                                                                                                   column=3).value
+        student_sheet.cell(row=2, column=5).value += student_sheet.cell(row=r, column=4).value
+        j += 1
+
+oup = openpyxl.Workbook()
+op2 = oup.active
+op2.cell(row=1, column=1).value = "Student Name"
+op2.cell(row=1, column=2).value = "Total Marks"
+op2.cell(row=1, column=3).value = "Percentage"
+op2.cell(row=1, column=4).value = "Rank"
+class_list = []
+
+
+
+i = 0
+while i < 40:
+    class_list.append([])
+    class_list[i].append(student_list[i])
+    class_list[i].append(op[student_list[i]].cell(row=2, column=5).value)
+    i += 1
+
+
+class_list.sort(key=lambda x: x[1], reverse=1)
+
+i=0
+while i < 40:
+    op2.cell(row=i + 2, column=1).value = class_list[i][0]
+    op2.cell(row=i + 2, column=2).value = class_list[i][1]
+    op2.cell(row=i + 2, column=3).value = f"{(class_list[i][1]/5):.2f}"
+    op2.cell(row=i + 2, column=4).value = i+1
+    i += 1
+
+
+location = "C:\\Users\\rnarn\\Desktop\\Student_Result.xlsx"
+op.save(location)
+
+location = "C:\\Users\\rnarn\\Desktop\\Class_Result.xlsx"
+oup.save(location)
